@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Главная</title>
+{% endblock %}
+
+{% block body %}
+<div class="container py-3">
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+        {% for product in products %}
+        <div class="col">
+            <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                    <a href="{{ url_for('product', id=product[0]) }}" class="nav-link px-2 link-dark">
+                        <h4 class="my-0 fw-normal">{{ product[2] }}</h4>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">{{ product[3] }}<small
+                            class="text-muted fw-light"> руб.</small>
+                    </h1>
+                    <form method="post">
+                        <p>
+                            <button type="submit" class="w-100 btn btn-lg btn-outline-primary" name="add_to_cart"
+                                    value="{{ product[0] }}">В корзину
+                            </button>
+                        </p>
+                        <p>
+                            <button type="submit" class="w-100 btn btn-lg btn-outline-primary" name="delete"
+                                    value="{{ product[0] }}">Удалить товар
+                            </button>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

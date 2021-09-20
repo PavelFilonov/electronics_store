@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Добавление товара</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <form method="post">
+        <h4 class="mb-3">Добавьте товар</h4>
+
+        <div class="row g-3">
+            <div class="col-5">
+                <input type="text" class="form-control" name="code" placeholder="Код товара">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="title" placeholder="Название">
+            </div>
+
+            <div class="col-3">
+                <input type="text" class="form-control" name="price" placeholder="Цена (в рублях)">
+            </div>
+
+            <div class="col-12">
+                <textarea placeholder="Описание" name="description" class="form-control"></textarea>
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="name_category" placeholder="Категория">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="name_manufacture" placeholder="Производитель">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="discount" placeholder="Скидка">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="weight" placeholder="Вес">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="width" placeholder="Ширина">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="height" placeholder="Высота">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="long" placeholder="Длина">
+            </div>
+
+            <div class="col-5">
+                <input type="text" class="form-control" name="amount" placeholder="Количество на складе">
+            </div>
+        </div>
+        <br>
+        <div class="text-center">
+            <button class="btn btn-secondary" type="submit">Добавить товар</button>
+        </div>
+        <br>
+        {{ message }}
+    </form>
+</div>
+{% endblock %}

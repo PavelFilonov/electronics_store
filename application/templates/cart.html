@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Корзина</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="col-md-5 col-lg-4 order-md-last">
+        <form method="post">
+            <h4>
+                <span class="text-primary">Ваша корзина</span>
+            </h4>
+            <ul class="list-group mb-3">
+                {% for cart_product in cart_products %}
+                <li class="list-group-item d-flex justify-content-between lh-sm">
+                    <div>
+                        <h6 class="my-0">{{ cart_product[0] }}</h6>
+                        <br>
+                        <div class="col-3">
+                            <br>
+                            <p>
+                                <button type="submit" class="btn btn-secondary" name="delete"
+                                        value="{{ cart_product[3] }} {{ cart_product[4] }}">Удалить
+                                </button>
+                            </p>
+                            <br>
+                            <p>
+                                <button type="submit" class="btn btn-secondary" name="-"
+                                        value="{{ cart_product[3] }} {{ cart_product[4] }}">-
+                                </button>
+                            </p>
+                            <br>
+                            <p>
+                                <button type="submit" class="btn btn-secondary" name="+"
+                                        value="{{ cart_product[3] }} {{ cart_product[4] }}">+
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-muted">{{ cart_product[6] }}</span>
+                        <span class="text-muted">x</span>
+                        <span class="text-muted">{{ cart_product[5] }}</span>
+                        <span class="text-muted">=</span>
+                        <span class="text-muted">{{ cart_product[5] * cart_product[6] }} руб.</span>
+                    </div>
+                </li>
+                {% endfor %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Итого</span>
+                    <strong>{{ total }} руб.</strong>
+                </li>
+            </ul>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="commentInput" placeholder="Комментарий" name="comment">
+                <label for="commentInput">Введите комментарий к заказу</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="addressInput" placeholder="Адрес" name="address">
+                <label for="addressInput">Введите адрес</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="paymentTypeInput" placeholder="Способ оплаты" name="payment_type">
+                <label for="paymentTypeInput">Введите способ оплаты</label>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-secondary" name="buy">Купить</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

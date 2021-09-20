@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Войти</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <main class="form-signin">
+        <form method="post">
+            <h1 class="h3 mb-3 fw-normal">Войдите</h1>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput" placeholder="Введите email" name="email">
+                <label for="floatingInput">Введите email</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="floatingPassword" placeholder="Введите пароль"
+                       name="password">
+                <label for="floatingPassword">Введите пароль</label>
+            </div>
+            <br>
+            <div class="text-center">
+                <button class="btn btn-secondary" type="submit">Войти</button>
+            </div>
+            <br>
+            <label>{{ message }}</label>
+        </form>
+    </main>
+</div>
+{% endblock %}

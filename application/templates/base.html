@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+<div class="container">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a href="{{ url_for('main') }}" class="nav-link px-2 link-secondary">Главная</a></li>
+            {% if user['name'] != -1 %}
+            <li><a href="{{ url_for('cart') }}" class="nav-link px-2 link-dark">Корзина</a></li>
+            <li><a href="{{ url_for('orders') }}" class="nav-link px-2 link-dark">Заказы</a></li>
+            {% endif %}
+            {% if user['role_name'] == "Admin" %}
+            <li><a href="{{ url_for('create') }}" class="nav-link px-2 link-dark">Добавить товар</a></li>
+            <li><a href="{{ url_for('users') }}" class="nav-link px-2 link-dark">Пользователи</a></li>
+            {% endif %}
+        </ul>
+
+        <div class="col-md-3 text-end">
+            <ul class="nav nav-pills">
+                {% if user['name'] == -1 %}
+                <li><a href="{{ url_for('login') }}" class="nav-link">Войти</a></li>
+                <li><a href="{{ url_for('register') }}" class="nav-link active">Зарегистрироваться</a></li>
+                {% else %}
+                <li><label class="nav-link link-dark">{{ user['name'] }}</label></li>
+                <li><a href="{{ url_for('log_out') }}" class="nav-link">Выйти</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </header>
+</div>
+{% block body %}{% endblock %}
+</body>
+</html>

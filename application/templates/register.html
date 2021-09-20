@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Зарегистрироваться</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <main class="form-signin">
+        <form method="post">
+            <h1 class="h3 mb-3 fw-normal">Зарегистрируйтесь</h1>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput1" placeholder="Введите имя" name="name">
+                <label for="floatingInput1">Введите имя</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput2" placeholder="Введите фамилию" name="surname">
+                <label for="floatingInput2">Введите фамилию</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput3" placeholder="Введите отчество" name="patronymic">
+                <label for="floatingInput3">Введите отчество</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput4" placeholder="Введите email" name="email">
+                <label for="floatingInput4">Введите email</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput5" placeholder="Введите номер телефона" name="phone">
+                <label for="floatingInput5">Введите номер телефона</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="floatingPassword"
+                       placeholder="Введите пароль (от 8 символов)" name="password1">
+                <label for="floatingPassword">Введите пароль (от 8 символов)</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="floatingPassword2"
+                       placeholder="Повторите пароль (от 8 символов)" name="password2">
+                <label for="floatingPassword2">Повторите пароль (от 8 символов)</label>
+            </div>
+            <br>
+            <div class="form-floating">
+                <input type="date" class="form-control" id="floatingDate"
+                       placeholder="Введите дату рождения" name="date">
+                <label for="floatingDate">Введите дату рождения</label>
+            </div>
+            <br>
+            <div class="text-center">
+                <button class="btn btn-secondary" type="submit">Зарегистрироваться</button>
+            </div>
+            <br>
+            <label>{{ message }}</label>
+        </form>
+    </main>
+</div>
+{% endblock %}

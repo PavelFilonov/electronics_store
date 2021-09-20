@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Пользователи</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="col-md-5 col-lg-4 order-md-last">
+        <h4 class="mb-3">Пользователи</h4>
+        <ul class="list-group mb-3">
+            {% for user in users %}
+            <li class="list-group-item d-flex justify-content-between lh-sm">
+                <form method="post">
+                    <h6 class="my-0"><p><label>{{ user[1] }} {% if user_id == user[0] %} (я) {% endif %}</label>
+                    </p></h6>
+                    <p><label>id: {{ user[0] }}</label></p>
+                    <p><label>Фамилия: {{ user[2] }}</label></p>
+                    <p><label>Отчество: {{ user[3] }}</label></p>
+                    <p><label>Email: {{ user[4] }}</label></p>
+                    <p><label>Номер телефона: {{ user[5] }}</label></p>
+                    <p><label>Название роли: {{ user[6] }}</label></p>
+                    <p><label>Пароль: {{ user[7] }}</label></p>
+                    <p><label>Дата рождения: {{ user[8] }}</label></p>
+
+                    {% if user_id != user[0] %}
+                    <p>
+                        <button type="submit" class="btn btn-secondary" name="delete_user" value="{{ user[0] }}">
+                            Удалить
+                        </button>
+                    </p>
+                    <p>
+                        <button type="submit" class="btn btn-secondary" name="remove_admin" value="{{ user[0] }}">Снять
+                            должность администратора
+                        </button>
+                    </p>
+                    {% endif %}
+                    {% if user[6] != "Admin" %}
+                    <p>
+                        <button type="submit" class="btn btn-secondary" name="do_admin" value="{{ user[0] }}">Назначить
+                            администратором
+                        </button>
+                    </p>
+                    {% endif %}
+                </form>
+            </li>
+            <br>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
