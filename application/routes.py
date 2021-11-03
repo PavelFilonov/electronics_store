@@ -1,7 +1,11 @@
 from flask import request, render_template, session, url_for, redirect
 
 from application import app
-from application.database import configs, Error, get_db, close_db
+from application.database import Error, get_db, close_db
+from application.queries.selecter import *
+from application.queries.inserter import *
+from application.queries.updater import *
+from application.queries.deleter import *
 from application.utils import calculate_total, get_active_user, add_product_to_cart, delete_product
 
 
@@ -13,16 +17,12 @@ def main():
         if "add_to_cart" in request.form:
             try:
                 add_product_to_cart(connection, cursor)
-            except:
+            except Error as e:
+                print(e)
                 return redirect(url_for('main'))
         elif "delete" in request.form:
             return delete_product(connection, cursor, request.form['delete'])
-    cursor.execute(
-        f'''
-            SELECT *
-            FROM product
-        '''
-    )
+    cursor.execute(select_products)
     products = cursor.fetchall()
     close_db(connection, cursor)
     return render_template('main.html', products=products, user=user)
@@ -36,14 +36,7 @@ def login():
         password = request.form['password']
 
         connection, cursor = get_db()
-        cursor.execute(
-            f'''
-            SELECT * 
-            FROM user
-            WHERE email = %(email)s AND password = %(password)s;
-            '''
-            , {'email': email, 'password': password}
-        )
+        cursor.execute(select_user_by_email_and_pass, {'email': email, 'password': password})
         user_query = cursor.fetchall()
         close_db(connection, cursor)
 
@@ -75,41 +68,23 @@ def register():
             return render_template('register.html', message="Минимальное количество символов в пароле: 8", user=user)
 
         connection, cursor = get_db()
-        cursor.execute(
-            f'''
-            SELECT * 
-            FROM user
-            WHERE email = %(email)s OR phone = %(phone)s;
-            '''
-            , {'email': email, 'phone': phone}
-        )
+        cursor.execute(select_user_by_email_or_phone, {'email': email, 'phone': phone})
         user = cursor.fetchall()
 
         if len(user) > 0:
-            return render_template('register.html', message="Пользователь с введёнными данными уже существует", user=user)
+            return render_template('register.html', message="Пользователь с введёнными данными уже существует",
+                                   user=user)
 
         try:
-            cursor.execute(
-                f'''
-                INSERT INTO user (name, surname, patronymic, email, phone, password, birthday)
-                VALUES (%(name)s, %(surname)s, %(patronymic)s, %(email)s, %(phone)s, %(password)s, %(birthday)s);
-                '''
-                , {'name': name, 'surname': surname, 'patronymic': patronymic, 'email': email, 
-                   'phone': phone, 'password': password1, 'birthday': date_birthday}
-            )
+            cursor.execute(insert_user, {'name': name, 'surname': surname, 'patronymic': patronymic, 'email': email,
+                                         'phone': phone, 'password': password1, 'birthday': date_birthday})
             connection.commit()
-            cursor.execute(
-                f'''
-                    SELECT * 
-                    FROM user
-                    WHERE email = %(email)s AND password = %(password)s;
-                '''
-                , {'email': email, 'password': password1}
-            )
+            cursor.execute(select_user_by_email_and_pass, {'email': email, 'password': password1})
             user = cursor.fetchall()
             session['user_id'] = user[0][0]
             return redirect(url_for('main'))
-        except:
+        except Error as e:
+            print(e)
             return render_template('register.html', message="Неправильный ввод", user=user)
         finally:
             close_db(connection, cursor)
@@ -138,7 +113,8 @@ def create():
             height = int(request.form['height'])
             long = int(request.form['long'])
             amount = int(request.form['amount'])
-        except:
+        except Error as e:
+            print(e)
             return render_template('create.html', message="Неправильный ввод", user=user)
 
         if price < 0 or discount < 0 or weight < 0 or width < 0 or height < 0 or long < 0 or amount < 0:
@@ -146,33 +122,21 @@ def create():
 
         connection, cursor = get_db()
         try:
-            cursor.execute(
-                f'''
-                    INSERT INTO product (code, title, price, description, category_id, manufacture_id, discount, weight, 
-                    width, height, `long`)
-                    SELECT %(code)s, %(title)s, %(price)s, %(description)s, category.id, manufacture.id, %(discount)s, 
-                    %(weight)s, %(width)s, %(height)s, %(long)s
-                    FROM category, manufacture
-                    WHERE category.name = %(name_category)s AND manufacture.name = %(name_manufacture)s;
-                '''
-                , {'code': code, 'title': title, 'price': price, 'description': description, 'discount': discount,
-                   'weight': weight, 'width': width, 'height': height, 'long': long, 'name_category': name_category,
-                   'name_manufacture': name_manufacture}
-            )
+            cursor.execute(insert_product, {'code': code, 'title': title, 'description': description,
+                                            'discount': discount,'weight': weight, 'width': width, 'height': height,
+                                            'long': long, 'name_category': name_category,
+                                            'name_manufacture': name_manufacture})
             connection.commit()
 
-            cursor.execute(
-                f'''
-                    INSERT INTO store (product_id, amount, date_from, date_to)
-                    SELECT id, %(amount)s, NOW(), %(date_to)s
-                    FROM product
-                    WHERE title = %(title)s;
-                '''
-                , {'amount': amount, 'date_to': '3000-01-01 00:00:00', 'title': title}
-            )
+            cursor.execute(insert_store, {'amount': amount, 'date_to': '3000-01-01 00:00:00', 'title': title})
+            connection.commit()
+
+            cursor.execute(insert_price, {'price': price, 'amount': amount, 'date_to': '3000-01-01 00:00:00',
+                                          'title': title})
             connection.commit()
             return redirect(url_for('main'))
-        except:
+        except Error as e:
+            print(e)
             return render_template('create.html', message="Неправильный ввод", user=user)
         finally:
             close_db(connection, cursor)
@@ -185,35 +149,15 @@ def cart():
     if request.method == 'POST':
         if "delete" in request.form:
             keys = request.form['delete'].split(" ")
-            cursor.execute(
-                f'''
-                    DELETE FROM order_product
-                    WHERE order_id = %(order_id)s AND product_id = %(product_id)s;
-                '''
-                , {'order_id': keys[0], 'product_id': keys[1]}
-            )
+            cursor.execute(delete_order_product, {'order_id': keys[0], 'product_id': keys[1]})
             connection.commit()
         elif "-" in request.form:
             keys = request.form['-'].split(" ")
-            cursor.execute(
-                f'''
-                    UPDATE order_product
-                    SET amount = IF (amount = 1, 1, amount - 1)
-                    WHERE order_id = %(order_id)s AND product_id = %(product_id)s;
-                '''
-                , {'order_id': keys[0], 'product_id': keys[1]}
-            )
+            cursor.execute(update_order_product_minus, {'order_id': keys[0], 'product_id': keys[1]})
             connection.commit()
         elif "+" in request.form:
             keys = request.form['+'].split(" ")
-            cursor.execute(
-                f'''
-                    UPDATE order_product
-                    SET amount = amount + 1
-                    WHERE order_id = %(order_id)s AND product_id = %(product_id)s;
-                '''
-                , {'order_id': keys[0], 'product_id': keys[1]}
-            )
+            cursor.execute(update_order_product_plus, {'order_id': keys[0], 'product_id': keys[1]})
             connection.commit()
         elif "buy" in request.form:
             # cursor.execute(
@@ -238,16 +182,7 @@ def cart():
             # )
             pass
 
-    cursor.execute(
-        f'''
-            SELECT title, price, discount, `order`.id, product_id, amount, ROUND(price - (price * discount / 100), 2) AS new_price
-            FROM `order`
-                JOIN order_product ON `order`.id = order_product.order_id
-                JOIN product ON order_product.product_id = product.id
-            WHERE user_id = %(user_id)s AND date_end IS NULL;
-        '''
-        , {'user_id': session['user_id']}
-    )
+    cursor.execute(select_order, {'user_id': session['user_id']})
 
     cart_products = cursor.fetchall()
     close_db(connection, cursor)
@@ -264,20 +199,11 @@ def product(id):
         if "add_to_cart" in request.form:
             try:
                 add_product_to_cart(connection, cursor)
-            except:
+            except Error as e:
                 return redirect(url_for('main'))
         elif "delete" in request.form:
             return delete_product(connection, cursor, id)
-    cursor.execute(
-        f'''
-            SELECT code, title, price, description, category.name, manufacture.name, discount, weight, width, height, `long`
-            FROM product
-                JOIN category ON product.category_id = category.id
-                JOIN manufacture ON product.manufacture_id = manufacture.id
-            WHERE product.id = %(product_id)s;
-        '''
-        , {'product_id': id}
-    )
+    cursor.execute(select_product, {'product_id': id})
     prod = cursor.fetchall()[0]
     close_db(connection, cursor)
     return render_template('product.html', user=user, product=prod)
@@ -291,41 +217,15 @@ def users():
         return redirect(url_for('main'))
     if request.method == 'POST':
         if "delete_user" in request.form:
-            cursor.execute(
-                f'''
-                    DELETE FROM user
-                    WHERE id = %(user_id)s;
-                '''
-                , {'user_id': request.form['delete_user']}
-            )
+            cursor.execute(delete_user, {'user_id': request.form['delete_user']})
             connection.commit()
         elif "do_admin" in request.form:
-            cursor.execute(
-                f'''
-                    UPDATE user
-                    SET role_id = 1
-                    WHERE id = %(user_id)s;
-                '''
-                , {'user_id': request.form['do_admin']}
-            )
+            cursor.execute(update_do_admin_user, {'user_id': request.form['do_admin']})
             connection.commit()
         elif "remove_admin" in request.form:
-            cursor.execute(
-                f'''
-                    UPDATE user
-                    SET role_id = 2
-                    WHERE id = %(user_id)s;
-                '''
-                , {'user_id': request.form['remove_admin']}
-            )
+            cursor.execute(update_remove_admin_user, {'user_id': request.form['remove_admin']})
             connection.commit()
-    cursor.execute(
-        f'''
-            SELECT user.id, user.name, surname, patronymic, email, phone, role.name, password, birthday
-            FROM user
-                JOIN role ON user.role_id = role.id
-        '''
-    )
+    cursor.execute(select_user_full_info)
     all_users = cursor.fetchall()
     close_db(connection, cursor)
     return render_template('users.html', users=all_users, user=user, user_id=session['user_id'])
@@ -335,19 +235,7 @@ def users():
 def orders():
     user = get_active_user()
     connection, cursor = get_db()
-    cursor.execute(
-        f'''
-            SELECT title, price, discount, comment, address, amount, ROUND(price - (price * discount / 100), 2) AS new_price,
-            cost_delivery, payment_type, date_start, date_end
-            FROM product 
-                JOIN order_product ON product.id = order_product.product_id
-                JOIN `order` ON order_product.order_id = `order`.id
-                JOIN user ON order.user_id = user.id
-            WHERE user.id = %(user_id)s AND date_end IS NOT NULL
-            ORDER BY date_start DESC;
-        '''
-        , {'user_id': session['user_id']}
-    )
+    cursor.execute(select_orders, {'user_id': session['user_id']})
     ords = cursor.fetchall()
     total = calculate_total(ords)
     close_db(connection, cursor)

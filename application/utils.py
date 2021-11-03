@@ -19,8 +19,8 @@ def get_active_user():
             f'''
                 SELECT user.name, role.name
                 FROM user
-                    JOIN role ON user.role_id = role.id
-                WHERE user.id = %(user_id)s;
+                    JOIN role USING (role_id)
+                WHERE user_id = %(user_id)s;
             '''
             , {'user_id': session['user_id']}
         )
@@ -55,9 +55,9 @@ def add_product_to_cart(connection, cursor):
 
         cursor.execute(
             f'''
-                SELECT id
+                SELECT order_id
                 FROM `order`
-                ORDER BY id
+                ORDER BY order_id
                 LIMIT 1;
             '''
         )
@@ -68,9 +68,9 @@ def add_product_to_cart(connection, cursor):
                 INSERT INTO order_status (order_id, status_id, date_start)
                 VALUES
                     (%(order_id)s, 1, NOW()),
-                    (%(order_id)s, 2, NUL
+                    (%(order_id)s, 2, NULL),
                     (%(order_id)s, 3, NULL),
-                    (%(order_id)s, 4, NULL)
+                    (%(order_id)s, 4, NULL);
             '''
             , {'order_id': order_id}
         )
@@ -78,7 +78,7 @@ def add_product_to_cart(connection, cursor):
     else:
         cursor.execute(
             f'''
-                SELECT id
+                SELECT order_id
                 FROM `order`
                 WHERE user_id = %(user_id)s AND date_end IS NULL;
             '''
@@ -90,7 +90,7 @@ def add_product_to_cart(connection, cursor):
         f'''
             SELECT 1
             FROM order_product
-            WHERE order_id = %(order_id)s AND product_id = %(product_id)s;
+            WHERE order_id = %(order_id)s AND prod_id = %(product_id)s;
         '''
         , {'order_id': order_id, 'product_id': request.form['add_to_cart']}
     )
@@ -98,7 +98,7 @@ def add_product_to_cart(connection, cursor):
     if len(ops) == 0:
         cursor.execute(
             f'''
-                INSERT INTO order_product (order_id, product_id)
+                INSERT INTO order_product (order_id, prod_id)
                 VALUES (%(order_id)s, %(product_id)s);
             '''
             , {'order_id': order_id, 'product_id': request.form['add_to_cart']}
@@ -110,7 +110,7 @@ def delete_product(connection, cursor, product_id):
     cursor.execute(
         f'''
             DELETE FROM product
-            WHERE id = %(product_id)s;
+            WHERE prod_id = %(product_id)s;
         '''
         , {'product_id': product_id}
     )

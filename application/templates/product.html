@@ -13,7 +13,7 @@
         <p><label>Описание: {{ product[3] }}</label></p>
         <p><label>Категория: {{ product[4] }}</label></p>
         <p><label>Производитель: {{ product[5] }}</label></p>
-        <p><label>Скидка: {{ product[6] }}</label></p>
+        <p><label>Скидка: {{ product[6] }}%</label></p>
         <p><label>Вес: {{ product[7] }}</label></p>
         <p><label>Ширина: {{ product[8] }}</label></p>
         <p><label>Высота: {{ product[9] }}</label></p>
@@ -23,9 +23,6 @@
         <div class="text-center">
             <p>
                 <button type="submit" class="btn btn-secondary" name="add_to_cart">В корзину</button>
-            </p>
-            <p>
-                <button type="submit" class="btn btn-secondary" name="buy">Купить</button>
             </p>
             {% if user['role_name'] == "Admin" %}
             <p>
